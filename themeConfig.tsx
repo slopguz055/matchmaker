@@ -5,6 +5,7 @@ const themeConfig: ThemeConfig = {
     colorPrimary: "#ef4444",
     borderRadius: 6,
     colorText: "#333",
+      colorTextDescription: "var(--text-light)", 
   },
   components: {
     Breadcrumb: {
@@ -16,13 +17,13 @@ const themeConfig: ThemeConfig = {
     },
     Form: {
       fontSize: 15,
+        labelColor: "var(--text-light)", 
     },
     Card: {
       // Aquí puedes añadir configuraciones específicas si lo deseas
     },
     Menu: {
-      colorItemBg: "var(--primary-dark)",           // Fondo de los ítems
-
+      itemBg: "var(--primary-dark)",           // Fondo de los ítems
       itemColor: "var(--text-light)",            // Texto normal
       itemHoverColor: "#ffffff",                 // Texto al pasar el ratón
       itemSelectedColor: "var(--accent)",        // Texto seleccionado

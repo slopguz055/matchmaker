@@ -9,7 +9,7 @@
 
 :root {
 	--background: #ffffff;
-	--foreground: #171717;
+	--foreground: #ededed;
 	--primary-dark: #1f2937; /* Azul marino (gray-800) */
 	--accent: #ef4444; /* Rojo tailwind (red-500) */
 	--text-light: #ededed;
@@ -35,4 +35,14 @@ body {
 }
 .text-accent {
 	color: var(--accent);
+}
+
+.ant-menu-item-selected {
+	color: #f0f0f0 !important; /* o el color que uses normalmente (como text-white) */
+	background-color: rgba(
+		104,
+		104,
+		104,
+		0.08
+	) !important; /* leve fondo en hover */
 }

@@ -1,9 +1,11 @@
-export default function CrearJamPage() {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold">Crear Jam</h1>
-        <p>Formulario para crear una nueva Jam.</p>
-      </div>
-    );
-  }
-  
+import FormCrearJam from "@/common/components/Forms/FormCrearJam/Delivery";
+
+export default function PageCrearJam() {
+	return (
+		<div className="min-h-screen flex items-center justify-center px-4 my-6">
+			<div className="container max-w-3xl bg-slate-800/70 p-6 rounded-lg shadow-md  px-10 py-10">
+				<FormCrearJam />
+			</div>
+		</div>
+	);
+}
