@@ -15,6 +15,15 @@
 	--text-light: #ededed;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: var(--accent) !important;
+}
+
 /* Dark mode opcional */
 @media (prefers-color-scheme: dark) {
 	:root {

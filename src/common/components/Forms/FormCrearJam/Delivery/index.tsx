@@ -1,254 +1,290 @@
 "use client";
+
 import {
 	Button,
 	DatePicker,
 	Form,
 	Input,
+	InputNumber,
 	Radio,
 	Select,
+	Spin,
 	TimePicker,
+	message,
 } from "antd";
-import { useForm } from "antd/es/form/Form";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
-import { FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { JamInputDTO, User, Game } from "@/common/types/utility";
 
-// Mock data types
-type Game = {
-	id: string;
-	title: string;
-	image: string;
-};
-
-const getAllGames = (): Promise<Game[]> => {
-	return Promise.resolve([
-		{
-			id: "game1",
-			title: "Rocket League",
-			image:
-				"https://cdn.cloudflare.steamstatic.com/steam/apps/252950/header.jpg",
-		},
-		{
-			id: "game2",
-			title: "Valorant",
-			image:
-				"https://upload.wikimedia.org/wikipedia/en/2/2b/Valorant_cover_art.jpg",
-		},
-		{
-			id: "game3",
-			title: "Among Us",
-			image:
-				"https://cdn.cloudflare.steamstatic.com/steam/apps/945360/header.jpg",
-		},
-	]);
-};
-
-const FormCrearJam: FC = () => {
-	const [mode, setMode] = useState("casual");
-	const [voice, setVoice] = useState("text");
-	const [games, setGames] = useState<Game[]>([]); // ✅ Estado para juegos
+const FormCrearJam = () => {
 	const [form] = Form.useForm();
+	const [games, setGames] = useState<Game[]>([]);
+	const [user, setUser] = useState<User | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [mode, setMode] = useState("CASUAL");
+	const [voice, setVoice] = useState("TEXT");
+
+	// Crear messageApi y contextHolder para toasts
+	const [messageApi, contextHolder] = message.useMessage();
 
 	useEffect(() => {
-		getAllGames().then(setGames); // ✅ Obtener juegos al montar
+		// Obtener usuario autenticado
+		fetch("http://localhost:8080/auth/me", { credentials: "include" })
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => setUser(data))
+			.finally(() => setLoading(false));
+
+		// Obtener lista de juegos
+		fetch("http://localhost:8080/games/")
+			.then((res) => res.json())
+			.then((data) => {
+				setGames(Array.isArray(data) ? data : data.games || []);
+			})
+			.catch((err) => console.error("Error fetching games:", err));
 	}, []);
 
 	const handleFinish = async (values: any) => {
-		if (values.desc == "") {
-			values.desc = "¡Únete a mi partida";
+		if (!user) {
+			messageApi.error("Debes iniciar sesión para crear una jam.");
+			return;
 		}
-		console.log(values);
+
+		const selectedGame = games.find((g) => g.appid === values.game);
+		if (!selectedGame) {
+			messageApi.error("Juego seleccionado no encontrado.");
+			return;
+		}
+
+		const jamPayload: JamInputDTO = {
+			title: values.title,
+			description: values.desc || "¡Únete a mi partida!",
+			game: selectedGame,
+			jamDate: values.date.format("YYYY-MM-DD"),
+			jamTime: values.time.format("HH:mm"),
+			state: "OPEN",
+			createdBy: user,
+			createdAt: new Date().toISOString(),
+			maxPlayers: values.numPlayers,
+			players: [user],
+			gameMode: values.gameMode,
+			voiceMode: values.voice,
+			language:
+				values.lang.toUpperCase() === "NOLANG"
+					? "INDEF"
+					: values.lang.toUpperCase(),
+			duration: values.duration,
+		};
+
+		try {
+			const response = await fetch("http://localhost:8080/jams/save", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(jamPayload),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Error HTTP: ${response.status}`);
+			}
+
+			await response.json();
+			messageApi.success("Jam creada con éxito 🎉");
+			form.resetFields();
+		} catch (error) {
+			messageApi.error("Error al crear la jam.");
+			console.error("Error al crear la jam:", error);
+		}
 	};
 
+	if (loading) return <Spin />;
+	if (!user)
+		return (
+			<p className="text-white text-center">
+				Para crear una jam, inicia sesión primero.
+			</p>
+		);
+
 	const modeOptions = [
-		{ value: "casual", emoji: "🎮", label: "Casual" },
-		{ value: "competitive", emoji: "⚔️", label: "Competitivo" },
-		{ value: "complecionist", emoji: "🏆", label: "Complecionista" },
+		{ value: "CASUAL", emoji: "🎮", label: "Casual" },
+		{ value: "COMPETITIVE", emoji: "⚔️", label: "Competitivo" },
+		{ value: "COMPLETIST", emoji: "🏆", label: "Completista" },
 	];
 
 	const voiceOptions = [
-		{ value: "text", emoji: "✍️🔇", label: "Texto" },
-		{ value: "hear", emoji: "✍️👂", label: "Texto y oír" },
-		{ value: "talk", emoji: "🗣️💬", label: "Hablar" },
+		{ value: "TEXT", emoji: "✍️🔇", label: "Texto" },
+		{ value: "HEAR", emoji: "✍️👂", label: "Escuchar" },
+		{ value: "TALK", emoji: "🗣️💬", label: "Hablar" },
 	];
 
 	return (
-		<Form
-			className="w-full"
-			form={form}
-			layout="vertical"
-			onFinish={handleFinish}
-			initialValues={{
-				gameMode: "casual",
-				voice: "text",
-				numPlayers: 2,
-				desc: "¡Únete a mi partida!",
-			}}
-		>
-			<Form.Item
-				name="game"
-				label="Juego"
-				rules={[{ required: true, message: "Este campo es obligatorio" }]}
+		<>
+			{/* Renderizamos el contextHolder para que funcionen los mensajes */}
+			{contextHolder}
+
+			<Form
+				className="w-full"
+				form={form}
+				layout="vertical"
+				onFinish={handleFinish}
+				initialValues={{
+					gameMode: "CASUAL",
+					voice: "TEXT",
+					numPlayers: 2,
+					desc: "¡Únete a mi partida!",
+				}}
 			>
-				<Select
-					showSearch
-					placeholder="Elige un juego"
-					filterOption={(input, option) =>
-						(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-					}
-					options={games.map((game) => ({
-						value: game.id,
-						label: game.title,
-					}))}
-				/>
-			</Form.Item>
-
-			<Form.Item
-				name="lang"
-				label="Idioma"
-				rules={[{ required: true, message: "Este campo es obligatorio" }]}
-			>
-				<Select
-					showSearch
-					placeholder="Selecciona el lenguaje preferido"
-					filterOption={(input, option) =>
-						(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-					}
-					options={[
-						{ value: "nolang", label: "🌐 - Indiferente" },
-						{ value: "es", label: "🇪🇸 - Español" },
-						{ value: "en", label: "🇬🇧 - English" },
-						{ value: "pt", label: "🇵🇹 - Portuguese" },
-						{ value: "fr", label: "🇫🇷 - French" },
-						{ value: "it", label: "🇮🇹 - Italian" },
-					]}
-				/>
-			</Form.Item>
-
-			<Form.Item name="desc" label="Descripción" rules={[{ required: false }]}>
-				<TextArea showCount rows={4} maxLength={300} />
-			</Form.Item>
-
-			<Form.Item
-				name="date"
-				label="Fecha"
-				rules={[{ required: true, message: "Selecciona una fecha" }]}
-			>
-				<DatePicker style={{ width: "100%" }} minDate={dayjs()} />
-			</Form.Item>
-
-			<Form.Item name="gameMode" label="Modo de juego" className="w-full">
-				<Radio.Group
-					value={mode}
-					onChange={(e) => setMode(e.target.value)}
-					className="!flex w-full"
-					buttonStyle="solid"
+				<Form.Item
+					name="title"
+					label="Título"
+					rules={[{ required: true, message: "Este campo es obligatorio" }]}
 				>
-					{modeOptions.map((opt) => (
-						<Radio.Button
-							key={opt.value}
-							value={opt.value}
-							className={`
-          flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2
-          ${mode === opt.value ? "!font-bold" : ""}
-        `}
-						>
-							<div className="text-2xl bg-slate-50 rounded-lg mx-6">
-								{opt.emoji}
-							</div>
-							<div className="mt-1 text-sm">{opt.label}</div>
-						</Radio.Button>
-					))}
-				</Radio.Group>
-			</Form.Item>
+					<Input placeholder="Grupo para raidear Exodia, Fall Guys de tranquis..." />
+				</Form.Item>
 
-			<Form.Item name="voice" label="Comunicación" className="w-full">
-				<Radio.Group
-					value={voice}
-					onChange={(e) => setVoice(e.target.value)}
-					className="!flex w-full"
-					buttonStyle="solid"
+				<Form.Item
+					name="game"
+					label="Juego"
+					rules={[{ required: true, message: "Este campo es obligatorio" }]}
 				>
-					{voiceOptions.map((opt) => (
-						<Radio.Button
-							key={opt.value}
-							value={opt.value}
-							className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
-								voice === opt.value ? "font-bold" : ""
-							}`}
-						>
-							<div className="text-2xl bg-slate-50 rounded-lg">{opt.emoji}</div>
-							<div className="mt-1 text-sm">{opt.label}</div>
-						</Radio.Button>
-					))}
-				</Radio.Group>
-			</Form.Item>
+					<Select
+						showSearch
+						placeholder="Elige un juego"
+						filterOption={(input, option) =>
+							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+						}
+						options={games.map((game) => ({
+							value: game.appid,
+							label: game.name,
+						}))}
+					/>
+				</Form.Item>
 
-			<Form.Item
-				name="time"
-				label="Hora"
-				rules={[{ required: true, message: "Selecciona una hora" }]}
-			>
-				<TimePicker format="HH:mm" style={{ width: "100%" }} />
-			</Form.Item>
+				<Form.Item
+					name="lang"
+					label="Idioma"
+					rules={[{ required: true, message: "Este campo es obligatorio" }]}
+				>
+					<Select
+						showSearch
+						placeholder="Selecciona el idioma preferido"
+						filterOption={(input, option) =>
+							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+						}
+						options={[
+							{ value: "NOLANG", label: "🌐 - Indiferente" },
+							{ value: "ES", label: "🇪🇸 - Español" },
+							{ value: "EN", label: "🇬🇧 - English" },
+							{ value: "PT", label: "🇵🇹 - Portuguese" },
+							{ value: "FR", label: "🇫🇷 - French" },
+							{ value: "IT", label: "🇮🇹 - Italian" },
+						]}
+					/>
+				</Form.Item>
 
-			<Form.Item
-				name="numPlayers"
-				label="Número de jugadores"
-				rules={[{ required: true, message: "Este campo es obligatorio" }]}
-			>
-				<Input type="number" min={2} max={100} />
-			</Form.Item>
+				<Form.Item name="desc" label="Descripción">
+					<TextArea showCount rows={4} maxLength={300} />
+				</Form.Item>
 
-			<Form.Item
-				name="duration"
-				label="Duración aproximada"
-				rules={[{ required: true, message: "Este campo es obligatorio" }]}
-			>
-				<Select placeholder="Selecciona una opción">
-					<Select.Option value="15-30">15–30 minutos</Select.Option>
-					<Select.Option value="30-60">30 minutos – 1 hora</Select.Option>
-					<Select.Option value="60-120">1 – 2 horas</Select.Option>
-					<Select.Option value="120-180">2 – 3 horas</Select.Option>
-					<Select.Option value="180-240">3 – 4 horas</Select.Option>
-					<Select.Option value="240+">Más de 4 horas</Select.Option>
-				</Select>
-			</Form.Item>
+				<Form.Item
+					name="date"
+					label="Fecha"
+					rules={[{ required: true, message: "Selecciona una fecha" }]}
+				>
+					<DatePicker
+						style={{ width: "100%" }}
+						disabledDate={(d) =>
+							!d || d.isAfter(dayjs().add(1, "year")) || d.isBefore(dayjs())
+						}
+					/>
+				</Form.Item>
 
-			<Form.Item>
-				<Button type="primary" htmlType="submit">
-					Enviar
-				</Button>
-			</Form.Item>
-		</Form>
+				<Form.Item name="gameMode" label="Modo de juego">
+					<Radio.Group
+						value={mode}
+						onChange={(e) => setMode(e.target.value)}
+						className="!flex w-full"
+						buttonStyle="solid"
+					>
+						{modeOptions.map((opt) => (
+							<Radio.Button
+								key={opt.value}
+								value={opt.value}
+								className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
+									mode === opt.value ? "!font-bold" : ""
+								}`}
+							>
+								<div className="text-2xl bg-slate-50 rounded-lg">
+									{opt.emoji}
+								</div>
+								<div className="mt-1 text-sm">{opt.label}</div>
+							</Radio.Button>
+						))}
+					</Radio.Group>
+				</Form.Item>
+
+				<Form.Item name="voice" label="Comunicación">
+					<Radio.Group
+						value={voice}
+						onChange={(e) => setVoice(e.target.value)}
+						className="!flex w-full"
+						buttonStyle="solid"
+					>
+						{voiceOptions.map((opt) => (
+							<Radio.Button
+								key={opt.value}
+								value={opt.value}
+								className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
+									voice === opt.value ? "font-bold" : ""
+								}`}
+							>
+								<div className="text-2xl bg-slate-50 rounded-lg">
+									{opt.emoji}
+								</div>
+								<div className="mt-1 text-sm">{opt.label}</div>
+							</Radio.Button>
+						))}
+					</Radio.Group>
+				</Form.Item>
+
+				<Form.Item
+					name="time"
+					label="Hora"
+					rules={[{ required: true, message: "Selecciona una hora" }]}
+				>
+					<TimePicker format="HH:mm" style={{ width: "100%" }} />
+				</Form.Item>
+
+				<Form.Item
+					name="numPlayers"
+					label="Número de jugadores"
+					rules={[{ required: true, message: "Este campo es obligatorio" }]}
+				>
+					<InputNumber min={2} max={100} style={{ width: "100%" }} />
+				</Form.Item>
+
+				<Form.Item
+					name="duration"
+					label="Duración"
+					rules={[{ required: true, message: "Selecciona una duración" }]}
+				>
+					<Select placeholder="Duración estimada">
+						<Select.Option value="15-30">15–30 minutos</Select.Option>
+						<Select.Option value="30-60">30–60 minutos</Select.Option>
+						<Select.Option value="60-120">1–2 horas</Select.Option>
+						<Select.Option value="120-180">2–3 horas</Select.Option>
+						<Select.Option value="180-240">3–4 horas</Select.Option>
+						<Select.Option value="240+">4+ horas</Select.Option>
+					</Select>
+				</Form.Item>
+
+				<Form.Item>
+					<Button type="primary" htmlType="submit" className="w-full">
+						🚀 Crear Jam
+					</Button>
+				</Form.Item>
+			</Form>
+		</>
 	);
 };
 
 export default FormCrearJam;
-
-/* 
-
-import { Tooltip } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
-
-const ExampleComponent = () => {
-  return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <span>Modo de juego</span>
-        <Tooltip title="Selecciona el modo de juego que prefieras.">
-          <InfoCircleOutlined style={{ marginLeft: 8, color: '#1890ff' }} />
-        </Tooltip>
-      </div>
-
-      <div>
-        <span>Comunicación</span>
-        <Tooltip title="Opciones para comunicarte con otros jugadores.">
-          <InfoCircleOutlined style={{ marginLeft: 8, color: '#1890ff' }} />
-        </Tooltip>
-      </div>
-    </div>
-  );
-};
-
-*/

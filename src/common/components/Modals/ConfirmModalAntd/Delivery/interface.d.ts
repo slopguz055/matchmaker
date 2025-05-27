@@ -1,8 +1,9 @@
 export interface ConfirmModalAntdProps {
 	title: string;
-	icon: any;
+	icon: React.ReactNode;
 	message: string;
 	open: boolean;
-	onConfirm: () => void;
+	onConfirm: () => void | Promise<void>;
 	onCancel: () => void;
+	confirmLoading?: boolean;
 }

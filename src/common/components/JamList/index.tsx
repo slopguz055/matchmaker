@@ -1,69 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
-import BigCardAntd from "../Cards/BigCardAntd";
-import { getJamsByUser } from "../MockBackend/db";
 
-type Game = {
-  id: string;
-  title: string;
-  image: string;
-};
+import { message } from "antd";
+import BigCardAntd from "@/common/components/Cards/BigCardAntd";
+import { Jam } from "@/common/types/utility";
 
-type User = {
-  id: string;
-  username: string;
-  avatar: string;
-};
+interface JamListProps {
+	jams: Jam[];
+	setJams?: React.Dispatch<React.SetStateAction<Jam[]>>;
+	editable?: boolean;
+}
 
-type Jam = {
-  id: string;
-  userId: string;
-  gameId: string;
-  maxPlayers: number;
-  currentPlayers: User[];
-  description: string;
-  status: string;
-  date: string;
-  time: string;
-  user?: User;
-  game?: Game;
-};
+const JamList: React.FC<JamListProps> = ({
+	jams,
+	setJams,
+	editable = true,
+}) => {
+	const [messageApi, contextHolder] = message.useMessage();
 
-const JamList = () => {
-  const [jams, setJams] = useState<Jam[]>([]);
+	if (jams.length === 0) {
+		return (
+			<div className="text-center mt-10 text-gray-500">
+				No hay jams en esta sección todavía
+			</div>
+		);
+	}
 
-  useEffect(() => {
-    getJamsByUser("user1").then(setJams);
-  }, []);
+	const handleUpdateJam = (updatedJam: Jam) => {
+		if (!setJams) return;
+		setJams((prev) =>
+			prev.map((jam) => (jam.id === updatedJam.id ? updatedJam : jam))
+		);
+	};
 
-  const handleUpdateJam = (updatedJam: Jam) => {
-    setJams((prevJams) =>
-      prevJams.map((jam) =>
-        jam.id === updatedJam.id ? { ...jam, ...updatedJam } : jam
-      )
-    );
-  };
+	const handleDeleteJam = (id: string) => {
+		if (!setJams) return;
+		setJams((prev) => prev.filter((jam) => jam.id !== id));
+	};
 
-  return (
-    <>
-      {jams.map((jam) => (
-        <BigCardAntd
-          key={jam.id}
-          game={jam.game?.title || ""}
-          alt={jam.game?.title || ""}
-          src={jam.game?.image || ""}
-          user={jam.user?.avatar || ""}
-          desc={jam.description}
-          date={jam.date}
-          time={jam.time}
-          maxPlayers={jam.maxPlayers}
-          currentPlayers={jam.currentPlayers}
-          jamData={jam}
-          onUpdateJam={handleUpdateJam}
-        />
-      ))}
-    </>
-  );
+	return (
+		<>
+			{contextHolder}
+			<div className="flex flex-wrap justify-center gap-8 mt-10">
+				{jams.map((jam) => (
+					<BigCardAntd
+						key={jam.id}
+						jam={jam}
+						onUpdate={handleUpdateJam}
+						onDelete={editable ? handleDeleteJam : undefined}
+						messageApi={messageApi}
+					/>
+				))}
+			</div>
+		</>
+	);
 };
 
 export default JamList;

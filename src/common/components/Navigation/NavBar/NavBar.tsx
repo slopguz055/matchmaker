@@ -71,6 +71,7 @@ const NavBar: FC = () => {
 					selectedKeys={selectedKey ? [selectedKey] : []}
 					className="border-none font-medium text-base bg-transparent"
 					items={menuItems}
+					overflowedIndicator={null}
 				/>
 			</div>
 

@@ -1,16 +1,11 @@
-import UserNavAvatar from "@/common/components/Navigation/UserNavAvatar/Delivery";
+import HistoryJamList from "@/common/components/Cards/HistoryJamList/Delivery";
 
-export default function PagePruebas() {
-	const usuario = {
-		avatar:
-			"https://avatars.steamstatic.com/274b80c245f0daab9db805507e79753c0568ca09_full.jpg",
-		name: "guineapig.driver gamehag.com",
-		profileUrl: "https://steamcommunity.com/profiles/76561198847318451/",
-		steamId: "76561198847318451",
-	};
+export default function PruebasPage() {
 	return (
-		<div>
-			<UserNavAvatar user={usuario} />
+		<div className="min-h-screen flex items-center justify-center px-4 my-6">
+			<div className="container max-w-3xl bg-slate-800/70 p-10 rounded-lg shadow-md">
+				<HistoryJamList />
+			</div>
 		</div>
 	);
 }

@@ -1,68 +1,131 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Avatar, Card, Typography, Skeleton, Tag, Button } from "antd";
 
-interface Usuario {
-  steamId: string;
-  name: string;
-  profileUrl: string;
-  // Añade aquí otros campos que devuelva tu DTO
-}
+const { Title } = Typography;
+
+type User = {
+	id: number;
+	steamId: string;
+	name: string;
+	avatar: string;
+};
 
 export default function PerfilPage() {
-  const searchParams = useSearchParams();
-  const steamId = searchParams.get('id');
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(true);
+	const searchParams = useSearchParams();
+	const router = useRouter();
 
-  useEffect(() => {
-    if (!steamId) {
-      setCargando(false);
-      return;
-    }
+	const steamIdFromUrl = searchParams.get("id");
 
-    const fetchUsuario = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/users/mongo/${steamId}`);
-        
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        setUsuario(data);
-      } catch (err) {
-        console.error('Error cargando usuario:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setCargando(false);
-      }
-    };
+	const [usuario, setUsuario] = useState<User | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	const [cargando, setCargando] = useState(true);
 
-    fetchUsuario();
-  }, [steamId]);
+	useEffect(() => {
+		if (!steamIdFromUrl) {
+			// No hay id en URL: fetch para obtener user actual
+			fetch("http://localhost:8080/auth/me", { credentials: "include" })
+				.then(async (res) => {
+					if (!res.ok) {
+						throw new Error("No autenticado o token inválido");
+					}
+					const data = await res.json();
+					if (!data?.steamId) {
+						throw new Error("No se ha proporcionado una id de usuario válida");
+					}
+					// Redirigir a /perfil?id=steamId
+					router.replace(`/perfil?id=${data.steamId}`);
+				})
+				.catch((err) => {
+					setError(err instanceof Error ? err.message : "Error desconocido");
+					setCargando(false);
+				});
+			return;
+		}
 
-  if (!steamId) return <p>No se ha proporcionado un Steam ID.</p>;
-  if (cargando) return <p>Cargando perfil...</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!usuario) return <p>No se encontró el usuario.</p>;
+		// Si hay id en URL, cargar usuario normal
+		setCargando(true);
+		setError(null);
+		setUsuario(null);
 
-  return (
-    <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Perfil de {usuario.name}</h1>
-      <div className="space-y-2">
-        <p><span className="font-semibold">Steam ID:</span> {usuario.steamId}</p>
-        <p>
-          <span className="font-semibold">URL Steam:</span> 
-          <a href={usuario.profileUrl} target="_blank" rel="noopener noreferrer"
-             className="text-blue-600 hover:underline ml-2">
-            {usuario.profileUrl}
-          </a>
-        </p>
-        {/* Añade más campos según tu DTO */}
-      </div>
-    </div>
-  );
+		const fetchUserBySteamId = async (steamId: string) => {
+			try {
+				const res = await fetch(
+					`http://localhost:8080/users/byId/mongo/${steamId}`
+				);
+
+				if (res.status === 404) {
+					setError("No se ha encontrado un usuario con la ID proporcionada");
+					setUsuario(null);
+					setCargando(false);
+					return;
+				}
+
+				if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+
+				const data = await res.json();
+
+				if (!data || Object.keys(data).length === 0) {
+					setError("No se ha encontrado un usuario con la ID proporcionada");
+					setUsuario(null);
+				} else {
+					setUsuario(data);
+				}
+			} catch (err) {
+				setError(err instanceof Error ? err.message : "Error desconocido");
+				setUsuario(null);
+			} finally {
+				setCargando(false);
+			}
+		};
+
+		fetchUserBySteamId(steamIdFromUrl);
+	}, [steamIdFromUrl, router]);
+
+	if (cargando)
+		return (
+			<div className="w-1/2 mx-auto mt-12">
+				<Skeleton avatar paragraph={{ rows: 3 }} active />
+			</div>
+		);
+
+	if (error) return <p className="text-red-500 text-center mt-12">{error}</p>;
+	if (!usuario)
+		return <p className="text-center mt-12">No se encontró el usuario.</p>;
+
+	const profileUrl = `https://steamcommunity.com/profiles/${usuario.steamId}`;
+
+	return (
+		<div className="w-1/2 mx-auto mt-12">
+			<Card
+				className="bg-[#181E2C] text-white"
+				style={{ borderRadius: "1rem" }}
+			>
+				<div className="flex items-center gap-4 mb-4">
+					<Avatar size={80} src={usuario.avatar} />
+					<div>
+						<Title level={1} className="text-accent m-0">
+							{usuario.name}
+						</Title>
+						<Tag color="geekblue" className="mt-1">
+							Steam ID: {usuario.steamId}
+						</Tag>
+					</div>
+				</div>
+
+				<div className="mx-4 mr-4 flex justify-end">
+					<Button
+						type="default"
+						href={profileUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Ir al perfil de Steam
+					</Button>
+				</div>
+			</Card>
+		</div>
+	);
 }

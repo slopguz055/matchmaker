@@ -1,40 +1,79 @@
-import { Avatar, Card, Image } from "antd";
-import { FC } from "react";
-import {
-  InfoCircleOutlined,
-  StarOutlined,
-  UsergroupAddOutlined,
-} from "@ant-design/icons";
+"use client";
+import { Avatar, Button, Card, Image, Modal } from "antd";
+import { FC, useState, useEffect } from "react";
 import Meta from "antd/es/card/Meta";
 
-interface CardAntdProps {
-  game: string; // Ahora mismo se pasará un título pero eventualmente será el nombre del juego para extraer la foto
-  alt: string;
-  src: string; // Eventualmente no hará falta y se sustituirá por game.image o similar directamente de steam
-  user: string; // Ahora mismo se pasará una url con una imagen de avatar, pero eventualmente será un usuario para tomar la dirección de su avatar y su nombre
-  desc: string;
+interface User {
+	id: string;
+	username: string;
+	avatar: string;
 }
 
-const CardAntd: FC<CardAntdProps> = ({
-  game,
-  alt,
-  src,
-  user,
-  desc,
-}: CardAntdProps) => {
-  return (
-    <Card
-      className="transition-transform duration-200 hover:scale-105"
-      style={{ width: 300 }}
-      cover={<Image alt={alt} src={src} preview={false} />}
-      actions={[
-        <InfoCircleOutlined key="info" />,
-        <UsergroupAddOutlined key="join" />,
-        <StarOutlined key="fav" />,
-      ]}
-    >
-      <Meta avatar={<Avatar src={user} />} title={game} description={desc} />
-    </Card>
-  );
+interface CardAntdProps {
+	game: string;
+	alt: string;
+	src: string;
+	user: string;
+	desc: string;
+}
+
+const CardAntd: FC<CardAntdProps> = ({ game, alt, src, user, desc }) => {
+	const [isClient, setIsClient] = useState(false);
+	const [infoModalVisible, setInfoModalVisible] = useState(false);
+
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	if (!isClient) return null;
+
+	return (
+		<>
+			<Card
+				className="h-[30vh] flex flex-col justify-between border border-transparent hover:border-slate-400 transition-all duration-500 hover:scale-105"
+				style={{ maxWidth: 460, width: "100%" }}
+				cover={<Image alt={alt} src={src} preview={false} />}
+				actions={[
+					<Button
+						key="more-info"
+						type="primary"
+						onClick={() => setInfoModalVisible(true)}
+					>
+						Más info
+					</Button>,
+				]}
+			>
+				<Meta
+					avatar={<Avatar src={user} />}
+					title={game}
+					description={
+						<span style={{ color: "black" }}>
+							{desc.length > 20 ? desc.slice(0, 20) + "..." : desc}
+						</span>
+					}
+				/>
+			</Card>
+
+			<Modal
+				open={infoModalVisible}
+				onCancel={() => setInfoModalVisible(false)}
+				footer={null}
+				title="Información de la Jam"
+			>
+				<div className="flex flex-col gap-4">
+					<Image alt={alt} src={src} preview={false} className="rounded-md" />
+					<div>
+						<h2 className="text-lg font-semibold">{game}</h2>
+						<p className="text-gray-700">{desc}</p>
+					</div>
+
+					<div className="mt-6 text-center text-sm text-gray-400">
+						Navega por Jams para más información
+					</div>
+				</div>
+			</Modal>
+		</>
+	);
 };
+
 export default CardAntd;
