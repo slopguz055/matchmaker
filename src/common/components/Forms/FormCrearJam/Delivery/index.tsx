@@ -25,17 +25,14 @@ const FormCrearJam = () => {
 	const [mode, setMode] = useState("CASUAL");
 	const [voice, setVoice] = useState("TEXT");
 
-	// Crear messageApi y contextHolder para toasts
 	const [messageApi, contextHolder] = message.useMessage();
 
 	useEffect(() => {
-		// Obtener usuario autenticado
 		fetch("http://localhost:8080/auth/me", { credentials: "include" })
 			.then((res) => (res.ok ? res.json() : null))
 			.then((data) => setUser(data))
 			.finally(() => setLoading(false));
 
-		// Obtener lista de juegos
 		fetch("http://localhost:8080/games/")
 			.then((res) => res.json())
 			.then((data) => {
@@ -118,7 +115,6 @@ const FormCrearJam = () => {
 
 	return (
 		<>
-			{/* Renderizamos el contextHolder para que funcionen los mensajes */}
 			{contextHolder}
 
 			<Form
@@ -126,6 +122,7 @@ const FormCrearJam = () => {
 				form={form}
 				layout="vertical"
 				onFinish={handleFinish}
+				scrollToFirstError={{ behavior: "smooth", block: "center" }}
 				initialValues={{
 					gameMode: "CASUAL",
 					voice: "TEXT",
@@ -138,7 +135,10 @@ const FormCrearJam = () => {
 					label="Título"
 					rules={[{ required: true, message: "Este campo es obligatorio" }]}
 				>
-					<Input placeholder="Grupo para raidear Exodia, Fall Guys de tranquis..." />
+					<Input
+						placeholder="Grupo para raidear Exodia, Fall Guys de tranquis..."
+						className="text-left"
+					/>
 				</Form.Item>
 
 				<Form.Item
@@ -149,6 +149,7 @@ const FormCrearJam = () => {
 					<Select
 						showSearch
 						placeholder="Elige un juego"
+						className="text-left"
 						filterOption={(input, option) =>
 							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
 						}
@@ -167,6 +168,7 @@ const FormCrearJam = () => {
 					<Select
 						showSearch
 						placeholder="Selecciona el idioma preferido"
+						className="text-left"
 						filterOption={(input, option) =>
 							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
 						}
@@ -185,18 +187,69 @@ const FormCrearJam = () => {
 					<TextArea showCount rows={4} maxLength={300} />
 				</Form.Item>
 
-				<Form.Item
-					name="date"
-					label="Fecha"
-					rules={[{ required: true, message: "Selecciona una fecha" }]}
-				>
-					<DatePicker
-						style={{ width: "100%" }}
-						disabledDate={(d) =>
-							!d || d.isAfter(dayjs().add(1, "year")) || d.isBefore(dayjs())
-						}
-					/>
-				</Form.Item>
+				{/* Fecha y Hora en la misma línea */}
+				<div className="flex gap-4">
+					<Form.Item
+						name="date"
+						label="Fecha"
+						rules={[{ required: true, message: "Selecciona una fecha" }]}
+						className="flex-1"
+					>
+						<DatePicker
+							style={{ width: "100%" }}
+							className="text-left"
+							disabledDate={(d) =>
+								!d || d.isAfter(dayjs().add(1, "year")) || d.isBefore(dayjs())
+							}
+						/>
+					</Form.Item>
+
+					<Form.Item
+						name="time"
+						label="Hora"
+						rules={[{ required: true, message: "Selecciona una hora" }]}
+						className="flex-1"
+					>
+						<TimePicker
+							format="HH:mm"
+							style={{ width: "100%" }}
+							className="text-left"
+						/>
+					</Form.Item>
+				</div>
+
+				{/* Número de jugadores y duración en la misma línea */}
+				<div className="flex gap-4">
+					<Form.Item
+						name="numPlayers"
+						label="Número de jugadores"
+						rules={[{ required: true, message: "Este campo es obligatorio" }]}
+						className="flex-1"
+					>
+						<InputNumber
+							min={2}
+							max={100}
+							style={{ width: "100%" }}
+							className="text-left"
+						/>
+					</Form.Item>
+
+					<Form.Item
+						name="duration"
+						label="Duración"
+						rules={[{ required: true, message: "Selecciona una duración" }]}
+						className="flex-1"
+					>
+						<Select placeholder="Duración estimada" className="text-left">
+							<Select.Option value="15-30">15–30 minutos</Select.Option>
+							<Select.Option value="30-60">30–60 minutos</Select.Option>
+							<Select.Option value="60-120">1–2 horas</Select.Option>
+							<Select.Option value="120-180">2–3 horas</Select.Option>
+							<Select.Option value="180-240">3–4 horas</Select.Option>
+							<Select.Option value="240+">4+ horas</Select.Option>
+						</Select>
+					</Form.Item>
+				</div>
 
 				<Form.Item name="gameMode" label="Modo de juego">
 					<Radio.Group
@@ -244,37 +297,6 @@ const FormCrearJam = () => {
 							</Radio.Button>
 						))}
 					</Radio.Group>
-				</Form.Item>
-
-				<Form.Item
-					name="time"
-					label="Hora"
-					rules={[{ required: true, message: "Selecciona una hora" }]}
-				>
-					<TimePicker format="HH:mm" style={{ width: "100%" }} />
-				</Form.Item>
-
-				<Form.Item
-					name="numPlayers"
-					label="Número de jugadores"
-					rules={[{ required: true, message: "Este campo es obligatorio" }]}
-				>
-					<InputNumber min={2} max={100} style={{ width: "100%" }} />
-				</Form.Item>
-
-				<Form.Item
-					name="duration"
-					label="Duración"
-					rules={[{ required: true, message: "Selecciona una duración" }]}
-				>
-					<Select placeholder="Duración estimada">
-						<Select.Option value="15-30">15–30 minutos</Select.Option>
-						<Select.Option value="30-60">30–60 minutos</Select.Option>
-						<Select.Option value="60-120">1–2 horas</Select.Option>
-						<Select.Option value="120-180">2–3 horas</Select.Option>
-						<Select.Option value="180-240">3–4 horas</Select.Option>
-						<Select.Option value="240+">4+ horas</Select.Option>
-					</Select>
 				</Form.Item>
 
 				<Form.Item>

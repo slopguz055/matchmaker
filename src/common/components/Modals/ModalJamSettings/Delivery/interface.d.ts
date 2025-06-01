@@ -2,7 +2,7 @@ interface ModalJamProps {
   isVisible: boolean;
   onCancel: () => void;
   onUpdate: (jam: any) => void;
-  currentPlayers: number;
+  players: number;
   jamData: {
     date?: string;
     time?: string;

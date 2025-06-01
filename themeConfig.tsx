@@ -8,55 +8,55 @@ const themeConfig: ThemeConfig = {
 		colorTextDescription: "var(--text-light)",
 	},
 	components: {
-		Breadcrumb: {
-			itemColor: "#ef4444",
-			lastItemColor: "#333",
-			separatorColor: "#333",
-			linkHoverColor: "#ef4444",
-			separatorMargin: 10,
-		},
 		Form: {
 			fontSize: 15,
 			labelColor: "var(--text-light)",
 		},
 		Card: {
-			colorText: "#0A0A0A", // 👈 Aplica este color solo en Card
+			colorText: "#0A0A0A",
 		},
 		Menu: {
-			itemBg: "var(--primary-dark)", // Fondo de los ítems
-			itemColor: "var(--text-light)", // Texto normal
-			itemHoverColor: "#ffffff", // Texto al pasar el ratón
-			itemSelectedColor: "var(--accent)", // Texto seleccionado
-			itemSelectedBg: "transparent", // Fondo del seleccionado
-			horizontalItemHoverColor: "#ffffff", // Hover en menú horizontal
+			itemBg: "var(--primary-dark)",
+			itemColor: "var(--text-light)",
+			itemHoverColor: "#ffffff",
+			itemSelectedColor: "var(--accent)",
+			itemSelectedBg: "transparent",
+			horizontalItemHoverColor: "#ffffff",
 			horizontalItemSelectedColor: "var(--accent)",
 			horizontalItemBorderRadius: 4,
-			// No se usan colorItemText ni colorItemBg (deprecados)
 		},
 		Button: {
-			defaultBg: "#181E2C", // Fondo base
-			defaultColor: "#FFFFFF", // Texto normal
-			defaultHoverBg: "#1F2737", // Fondo en hover
-			defaultHoverColor: "#91caff", // 👈 Texto en hover (gris)
+			defaultBg: "#181E2C",
+			defaultColor: "#FFFFFF",
+			defaultHoverBg: "#1F2737",
+			defaultHoverColor: "#91caff",
 			defaultBorderColor: "#181E2C",
+		},
+		Input: {
+			colorText: "#000000",
+			colorBgContainer: "#FFFFFF",
+			colorBorder: "#cccccc",
+			colorTextPlaceholder: "#888888",
+		},
+		Select: {
+			colorText: "#000000",
+			colorBgContainer: "#FFFFFF",
+			colorBorder: "#cccccc",
+			colorTextPlaceholder: "#888888",
+		},
+		InputNumber: {
+			colorText: "#000000",
+			colorBgContainer: "#FFFFFF",
+			colorBorder: "#cccccc",
+			colorTextPlaceholder: "#888888",
+		},
+		DatePicker: {
+			colorText: "#000000",
+			colorBgContainer: "#FFFFFF",
+			colorBorder: "#cccccc",
+			colorTextPlaceholder: "#888888",
 		},
 	},
 };
 
 export default themeConfig;
-/*
-  components: {
-    Button: {
-      colorPrimary: "#1890ff",
-      algorithm: true, // Habilita sobreescritura para este componente
-    } /*
-    Input: {
-      colorPrimary: "#1890ff",
-      activeBorderColor: "#1890ff",
-      hoverBorderColor: "#40a9ff",
-    },
-    Table: {
-      headerBg: "#fafafa",
-      headerColor: "#333",
-    },
-  },*/

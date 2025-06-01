@@ -1,28 +1,31 @@
-import NavBar from '@/common/components/Navigation/NavBar/NavBar';
-import './globals.css';
-import Footer from '@/common/components/Footer/Footer';
-import { ConfigProvider } from 'antd';
-import themeConfig from '../../themeConfig';
+import NavBar from "@/common/components/NavigationElements/NavBar/NavBar";
+import "./globals.css";
+import Footer from "@/common/components/Footer/Footer";
+import { ConfigProvider } from "antd";
+import themeConfig from "../../themeConfig";
+import { roboto, pressStart2p } from "./fonts/fonts";
 
 export const metadata = {
-  title: 'Matchmaker',
-  description: 'Organiza y participa en jams fácilmente',
+	title: "Matchmaker",
+	description: "Organiza y participa en jams fácilmente",
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode
+	children: React.ReactNode;
 }) {
-  return (
-    <html lang="es">
-      <body className="flex flex-col min-h-screen">
-      <ConfigProvider theme={themeConfig}>
-          <NavBar />
-            {children}
-            <Footer/>
-            </ConfigProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang="es">
+			<body
+				className={`${roboto.className} antialiased layout flex flex-col min-h-screen`}
+			>
+				<ConfigProvider theme={themeConfig}>
+					<NavBar />
+					{children}
+					<Footer />
+				</ConfigProvider>
+			</body>
+		</html>
+	);
 }
