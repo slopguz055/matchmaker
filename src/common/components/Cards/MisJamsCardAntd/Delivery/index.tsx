@@ -23,6 +23,7 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 	jam,
 	onActionComplete,
 	editable,
+	messageApi,
 }) => {
 	const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 	const [isConfirmDeleteVisible, setIsConfirmDeleteVisible] = useState(false);
@@ -50,15 +51,16 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 	const {
 		loadingDelete,
 		loadingExpel,
+		loadingUpdate,
 		handleDelete,
 		handleConfirmExpel,
 		handleConfirmLeave,
+		handleUpdateJam,
 	} = useJamActions({
 		jam,
 		onActionComplete,
 		currentUserId: currentUser?.steamId,
 	});
-
 	const gameModeMap: Record<string, string> = {
 		CASUAL: "🎮 Casual",
 		COMPETITIVE: "⚔️ Competitivo",
@@ -192,9 +194,10 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 			<ModalJam
 				isVisible={isEditModalVisible}
 				onCancel={() => setIsEditModalVisible(false)}
-				onUpdate={onActionComplete}
+				onUpdate={handleUpdateJam}
 				players={players?.length || 0}
 				jamData={jam}
+				isLoading={loadingUpdate}
 			/>
 
 			<ConfirmModalAntd

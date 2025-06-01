@@ -7,6 +7,7 @@ import {
 	CalendarOutlined,
 	ClockCircleOutlined,
 	UsergroupAddOutlined,
+	InfoCircleOutlined,
 } from "@ant-design/icons";
 import { Tag, Avatar, Tooltip } from "antd";
 import { HistoryJamCardProps } from "./interface";
@@ -106,11 +107,45 @@ const HistoryJamCard: FC<HistoryJamCardProps> = ({ jam }) => {
 
 				{/* Participantes con énfasis igual que Descripción */}
 				<div className="mb-3">
-					<span className="font-semibold text-gray-700">Participantes</span>
+					<div className="flex items-center">
+						<span className="font-semibold text-gray-700 mr-2">
+							Participantes
+						</span>
+						<Tooltip
+							title={
+								<div className="max-h-60 overflow-y-auto">
+									{" "}
+									{/* Limitamos altura y añadimos scroll */}
+									{jam.players.map((player) => (
+										<div
+											key={player.steamId}
+											className={`py-1 ${
+												player.steamId === jam.createdBy.steamId
+													? "font-semibold text-red-300"
+													: ""
+											}`}
+										>
+											{player.name}
+										</div>
+									))}
+								</div>
+							}
+							placement="right"
+							overlayClassName="max-w-xs" // Limita el ancho máximo del tooltip
+						>
+							<span className="text-gray-400 hover:text-gray-600 cursor-pointer">
+								<InfoCircleOutlined />
+							</span>
+						</Tooltip>
+					</div>
+
 					<div className="mt-1">
-						<Avatar.Group maxCount={5}>
+						<Avatar.Group
+							max={{ count: 5 }}
+							size="small"
+							className="flex flex-wrap gap-1"
+						>
 							{jam.players.map((player) => {
-								const isCreator = player.steamId === jam.createdBy.steamId;
 								return (
 									<Tooltip
 										key={player.steamId}
@@ -118,7 +153,7 @@ const HistoryJamCard: FC<HistoryJamCardProps> = ({ jam }) => {
 										title={
 											player.steamId === jam.createdBy.steamId ? (
 												<div className="text-center">
-													<div className="font-bold text-red-400">
+													<div className="font-semibold text-red-400">
 														Creador/a
 													</div>
 													<div>{player.name}</div>

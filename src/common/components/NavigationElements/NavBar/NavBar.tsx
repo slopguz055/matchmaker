@@ -125,16 +125,12 @@ const NavBar: FC = () => {
 								selectedKeys={selectedKey ? [selectedKey] : []}
 								className="border-none bg-transparent h-17"
 								disabledOverflow
-							>
-								{filteredItems.map(({ key, label, href }) => (
-									<Menu.Item
-										className="flex items-center text-xl h-16 leading-[62px]"
-										key={key}
-									>
-										<Link href={href}>{label}</Link>
-									</Menu.Item>
-								))}
-							</Menu>
+								items={filteredItems.map(({ key, label, href }) => ({
+									key,
+									label: <Link href={href}>{label}</Link>,
+									className: "flex items-center text-xl h-16 leading-[62px]",
+								}))}
+							/>
 						)}
 					</>
 				)}
@@ -168,13 +164,15 @@ const NavBar: FC = () => {
 				open={drawerVisible}
 				closeIcon={<span className="text-white text-xl">×</span>}
 				className="bg-primary-dark"
-				headerStyle={{
-					backgroundColor: "#1c2331",
-					borderBottom: "1px solid #333",
-				}}
-				bodyStyle={{
-					backgroundColor: "#1c2331",
-					padding: "16px",
+				styles={{
+					header: {
+						backgroundColor: "#1c2331",
+						borderBottom: "1px solid #333",
+					},
+					body: {
+						backgroundColor: "#1c2331",
+						padding: "16px",
+					},
 				}}
 			>
 				{loading ? (

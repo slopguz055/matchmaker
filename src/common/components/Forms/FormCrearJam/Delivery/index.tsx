@@ -10,12 +10,12 @@ import {
 	Select,
 	Spin,
 	TimePicker,
-	message,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import type { JamInputDTO, User, Game } from "@/common/types/utility";
+import { toast } from "react-toastify";
 
 const FormCrearJam = () => {
 	const [form] = Form.useForm();
@@ -24,8 +24,6 @@ const FormCrearJam = () => {
 	const [loading, setLoading] = useState(true);
 	const [mode, setMode] = useState("CASUAL");
 	const [voice, setVoice] = useState("TEXT");
-
-	const [messageApi, contextHolder] = message.useMessage();
 
 	useEffect(() => {
 		fetch("http://localhost:8080/auth/me", { credentials: "include" })
@@ -43,13 +41,13 @@ const FormCrearJam = () => {
 
 	const handleFinish = async (values: any) => {
 		if (!user) {
-			messageApi.error("Debes iniciar sesión para crear una jam.");
+			toast.error("Debes iniciar sesión para crear una jam.");
 			return;
 		}
 
 		const selectedGame = games.find((g) => g.appid === values.game);
 		if (!selectedGame) {
-			messageApi.error("Juego seleccionado no encontrado.");
+			toast.error("Juego seleccionado no encontrado.");
 			return;
 		}
 
@@ -85,10 +83,10 @@ const FormCrearJam = () => {
 			}
 
 			await response.json();
-			messageApi.success("Jam creada con éxito 🎉");
+			toast.success("Jam creada con éxito 🎉");
 			form.resetFields();
 		} catch (error) {
-			messageApi.error("Error al crear la jam.");
+			toast.error("Error al crear la jam.");
 			console.error("Error al crear la jam:", error);
 		}
 	};
@@ -114,201 +112,193 @@ const FormCrearJam = () => {
 	];
 
 	return (
-		<>
-			{contextHolder}
-
-			<Form
-				className="w-full"
-				form={form}
-				layout="vertical"
-				onFinish={handleFinish}
-				scrollToFirstError={{ behavior: "smooth", block: "center" }}
-				initialValues={{
-					gameMode: "CASUAL",
-					voice: "TEXT",
-					numPlayers: 2,
-					desc: "¡Únete a mi partida!",
-				}}
+		<Form
+			className="w-full"
+			form={form}
+			layout="vertical"
+			onFinish={handleFinish}
+			scrollToFirstError={{ behavior: "smooth", block: "center" }}
+			initialValues={{
+				gameMode: "CASUAL",
+				voice: "TEXT",
+				numPlayers: 2,
+				desc: "¡Únete a mi partida!",
+			}}
+		>
+			<Form.Item
+				name="title"
+				label="Título"
+				rules={[{ required: true, message: "Este campo es obligatorio" }]}
 			>
-				<Form.Item
-					name="title"
-					label="Título"
-					rules={[{ required: true, message: "Este campo es obligatorio" }]}
-				>
-					<Input
-						placeholder="Grupo para raidear Exodia, Fall Guys de tranquis..."
-						className="text-left"
-					/>
-				</Form.Item>
+				<Input
+					placeholder="Grupo para raidear Exodia, Fall Guys de tranquis..."
+					className="text-left"
+				/>
+			</Form.Item>
 
+			<Form.Item
+				name="game"
+				label="Juego"
+				rules={[{ required: true, message: "Este campo es obligatorio" }]}
+			>
+				<Select
+					showSearch
+					placeholder="Elige un juego"
+					className="text-left"
+					filterOption={(input, option) =>
+						(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+					}
+					options={games.map((game) => ({
+						value: game.appid,
+						label: game.name,
+					}))}
+				/>
+			</Form.Item>
+
+			<Form.Item
+				name="lang"
+				label="Idioma"
+				rules={[{ required: true, message: "Este campo es obligatorio" }]}
+			>
+				<Select
+					showSearch
+					placeholder="Selecciona el idioma preferido"
+					className="text-left"
+					filterOption={(input, option) =>
+						(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+					}
+					options={[
+						{ value: "NOLANG", label: "🌐 - Indiferente" },
+						{ value: "ES", label: "🇪🇸 - Español" },
+						{ value: "EN", label: "🇬🇧 - English" },
+						{ value: "PT", label: "🇵🇹 - Portuguese" },
+						{ value: "FR", label: "🇫🇷 - French" },
+						{ value: "IT", label: "🇮🇹 - Italian" },
+					]}
+				/>
+			</Form.Item>
+
+			<Form.Item name="desc" label="Descripción">
+				<TextArea showCount rows={4} maxLength={300} />
+			</Form.Item>
+
+			{/* Fecha y Hora en la misma línea */}
+			<div className="flex gap-4">
 				<Form.Item
-					name="game"
-					label="Juego"
-					rules={[{ required: true, message: "Este campo es obligatorio" }]}
+					name="date"
+					label="Fecha"
+					rules={[{ required: true, message: "Selecciona una fecha" }]}
+					className="flex-1"
 				>
-					<Select
-						showSearch
-						placeholder="Elige un juego"
+					<DatePicker
+						style={{ width: "100%" }}
 						className="text-left"
-						filterOption={(input, option) =>
-							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+						showToday={false}
+						disabledDate={(d) =>
+							!d || d.isAfter(dayjs().add(1, "year")) || d.isBefore(dayjs())
 						}
-						options={games.map((game) => ({
-							value: game.appid,
-							label: game.name,
-						}))}
 					/>
 				</Form.Item>
 
 				<Form.Item
-					name="lang"
-					label="Idioma"
-					rules={[{ required: true, message: "Este campo es obligatorio" }]}
+					name="time"
+					label="Hora"
+					rules={[{ required: true, message: "Selecciona una hora" }]}
+					className="flex-1"
 				>
-					<Select
-						showSearch
-						placeholder="Selecciona el idioma preferido"
+					<TimePicker
+						format="HH:mm"
+						allowClear={false}
+						showNow={false}
+						style={{ width: "100%" }}
 						className="text-left"
-						filterOption={(input, option) =>
-							(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-						}
-						options={[
-							{ value: "NOLANG", label: "🌐 - Indiferente" },
-							{ value: "ES", label: "🇪🇸 - Español" },
-							{ value: "EN", label: "🇬🇧 - English" },
-							{ value: "PT", label: "🇵🇹 - Portuguese" },
-							{ value: "FR", label: "🇫🇷 - French" },
-							{ value: "IT", label: "🇮🇹 - Italian" },
-						]}
+					/>
+				</Form.Item>
+			</div>
+
+			{/* Número de jugadores y duración en la misma línea */}
+			<div className="flex gap-4">
+				<Form.Item
+					name="numPlayers"
+					label="Número de jugadores"
+					rules={[{ required: true, message: "Este campo es obligatorio" }]}
+					className="flex-1"
+				>
+					<InputNumber
+						min={2}
+						max={100}
+						style={{ width: "100%" }}
+						className="text-left"
 					/>
 				</Form.Item>
 
-				<Form.Item name="desc" label="Descripción">
-					<TextArea showCount rows={4} maxLength={300} />
+				<Form.Item
+					name="duration"
+					label="Duración"
+					rules={[{ required: true, message: "Selecciona una duración" }]}
+					className="flex-1"
+				>
+					<Select placeholder="Duración estimada" className="text-left">
+						<Select.Option value="15-30">15–30 minutos</Select.Option>
+						<Select.Option value="30-60">30–60 minutos</Select.Option>
+						<Select.Option value="60-120">1–2 horas</Select.Option>
+						<Select.Option value="120-180">2–3 horas</Select.Option>
+						<Select.Option value="180-240">3–4 horas</Select.Option>
+						<Select.Option value="240+">4+ horas</Select.Option>
+					</Select>
 				</Form.Item>
+			</div>
 
-				{/* Fecha y Hora en la misma línea */}
-				<div className="flex gap-4">
-					<Form.Item
-						name="date"
-						label="Fecha"
-						rules={[{ required: true, message: "Selecciona una fecha" }]}
-						className="flex-1"
-					>
-						<DatePicker
-							style={{ width: "100%" }}
-							className="text-left"
-							showToday={false}
-							disabledDate={(d) =>
-								!d || d.isAfter(dayjs().add(1, "year")) || d.isBefore(dayjs())
-							}
-						/>
-					</Form.Item>
+			<Form.Item name="gameMode" label="Modo de juego">
+				<Radio.Group
+					value={mode}
+					onChange={(e) => setMode(e.target.value)}
+					className="!flex w-full"
+					buttonStyle="solid"
+				>
+					{modeOptions.map((opt) => (
+						<Radio.Button
+							key={opt.value}
+							value={opt.value}
+							className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
+								mode === opt.value ? "!font-bold" : ""
+							}`}
+						>
+							<div className="text-2xl bg-slate-50 rounded-lg">{opt.emoji}</div>
+							<div className="mt-1 text-sm">{opt.label}</div>
+						</Radio.Button>
+					))}
+				</Radio.Group>
+			</Form.Item>
 
-					<Form.Item
-						name="time"
-						label="Hora"
-						rules={[{ required: true, message: "Selecciona una hora" }]}
-						className="flex-1"
-					>
-						<TimePicker
-							format="HH:mm"
-							allowClear={false}
-							showNow={false}
-							style={{ width: "100%" }}
-							className="text-left"
-						/>
-					</Form.Item>
-				</div>
+			<Form.Item name="voice" label="Comunicación">
+				<Radio.Group
+					value={voice}
+					onChange={(e) => setVoice(e.target.value)}
+					className="!flex w-full"
+					buttonStyle="solid"
+				>
+					{voiceOptions.map((opt) => (
+						<Radio.Button
+							key={opt.value}
+							value={opt.value}
+							className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
+								voice === opt.value ? "font-bold" : ""
+							}`}
+						>
+							<div className="text-2xl bg-slate-50 rounded-lg">{opt.emoji}</div>
+							<div className="mt-1 text-sm">{opt.label}</div>
+						</Radio.Button>
+					))}
+				</Radio.Group>
+			</Form.Item>
 
-				{/* Número de jugadores y duración en la misma línea */}
-				<div className="flex gap-4">
-					<Form.Item
-						name="numPlayers"
-						label="Número de jugadores"
-						rules={[{ required: true, message: "Este campo es obligatorio" }]}
-						className="flex-1"
-					>
-						<InputNumber
-							min={2}
-							max={100}
-							style={{ width: "100%" }}
-							className="text-left"
-						/>
-					</Form.Item>
-
-					<Form.Item
-						name="duration"
-						label="Duración"
-						rules={[{ required: true, message: "Selecciona una duración" }]}
-						className="flex-1"
-					>
-						<Select placeholder="Duración estimada" className="text-left">
-							<Select.Option value="15-30">15–30 minutos</Select.Option>
-							<Select.Option value="30-60">30–60 minutos</Select.Option>
-							<Select.Option value="60-120">1–2 horas</Select.Option>
-							<Select.Option value="120-180">2–3 horas</Select.Option>
-							<Select.Option value="180-240">3–4 horas</Select.Option>
-							<Select.Option value="240+">4+ horas</Select.Option>
-						</Select>
-					</Form.Item>
-				</div>
-
-				<Form.Item name="gameMode" label="Modo de juego">
-					<Radio.Group
-						value={mode}
-						onChange={(e) => setMode(e.target.value)}
-						className="!flex w-full"
-						buttonStyle="solid"
-					>
-						{modeOptions.map((opt) => (
-							<Radio.Button
-								key={opt.value}
-								value={opt.value}
-								className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
-									mode === opt.value ? "!font-bold" : ""
-								}`}
-							>
-								<div className="text-2xl bg-slate-50 rounded-lg">
-									{opt.emoji}
-								</div>
-								<div className="mt-1 text-sm">{opt.label}</div>
-							</Radio.Button>
-						))}
-					</Radio.Group>
-				</Form.Item>
-
-				<Form.Item name="voice" label="Comunicación">
-					<Radio.Group
-						value={voice}
-						onChange={(e) => setVoice(e.target.value)}
-						className="!flex w-full"
-						buttonStyle="solid"
-					>
-						{voiceOptions.map((opt) => (
-							<Radio.Button
-								key={opt.value}
-								value={opt.value}
-								className={`flex-1 !h-24 !w-28 !flex !flex-col !items-center !justify-center !text-center !p-2 ${
-									voice === opt.value ? "font-bold" : ""
-								}`}
-							>
-								<div className="text-2xl bg-slate-50 rounded-lg">
-									{opt.emoji}
-								</div>
-								<div className="mt-1 text-sm">{opt.label}</div>
-							</Radio.Button>
-						))}
-					</Radio.Group>
-				</Form.Item>
-
-				<Form.Item>
-					<Button type="primary" htmlType="submit" className="w-full">
-						🚀 Crear Jam
-					</Button>
-				</Form.Item>
-			</Form>
-		</>
+			<Form.Item>
+				<Button type="primary" htmlType="submit" className="w-full">
+					🚀 Crear Jam
+				</Button>
+			</Form.Item>
+		</Form>
 	);
 };
 

@@ -1,5 +1,5 @@
 // handleActions.ts
-import { Jam, JamUpdateDTO } from "@/common/types/utility";
+import { Jam } from "@/common/types/utility";
 
 export const deleteJam = async (jamId: string): Promise<void> => {
 	const res = await fetch(`http://localhost:8080/jams/delete/${jamId}`, {
@@ -54,29 +54,17 @@ export const leaveJam = async (
 
 	return res.json();
 };
+
 export const updateJam = async (
 	jamId: string,
-	jamData: JamUpdateDTO
+	jamData: Partial<Jam>
 ): Promise<Jam> => {
-	const updateData: JamUpdateDTO = {
-		id: jamId,
-		title: jamData.title,
-		description: jamData.description,
-		jamDate: jamData.jamDate,
-		jamTime: jamData.jamTime,
-		maxPlayers: jamData.maxPlayers,
-		gameMode: jamData.gameMode,
-		voiceMode: jamData.voiceMode,
-		language: jamData.language,
-		duration: jamData.duration,
-	};
-
-	const res = await fetch(`http://localhost:8080/jams/modify`, {
-		method: "POST", // Cambiado a POST para coincidir con el backend
+	const res = await fetch(`http://localhost:8080/jams/modify/${jamId}`, {
+		method: "PUT",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(updateData),
+		body: JSON.stringify(jamData),
 		credentials: "include",
 	});
 

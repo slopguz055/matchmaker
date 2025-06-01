@@ -27,7 +27,7 @@ const CustomCarousel: FC<CustomCarouselProps> = ({ items }) => {
 	};
 
 	return (
-		<div className="relative px-2 sm:px-4 md:px-6 py-6 h-[34vh]">
+		<div className="relative px-2 sm:px-4 md:px-6 py-6 h-[34vh] md:mb-10">
 			<style>{`
         .slick-prev::before, .slick-next::before {
           display: none;

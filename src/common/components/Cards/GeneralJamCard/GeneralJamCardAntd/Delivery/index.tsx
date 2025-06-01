@@ -4,6 +4,8 @@ import { FC } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
 import {
+	ArrowDownOutlined,
+	ArrowUpOutlined,
 	CalendarOutlined,
 	ClockCircleOutlined,
 	UsergroupAddOutlined,
@@ -146,11 +148,17 @@ const GeneralJamCard: FC<GeneralJamCardProps> = ({
 									: "bg-gray-300 text-gray-600 cursor-not-allowed"
 							}`}
 						>
-							{jwtValid
-								? userIsInJam
-									? "Salir de la Jam"
-									: "Unirse a la Jam"
-								: "Inicia sesión para unirte"}
+							<div className="flex items-center justify-center gap-2">
+								{jwtValid &&
+									(userIsInJam ? <ArrowDownOutlined /> : <ArrowUpOutlined />)}
+								<span>
+									{jwtValid
+										? userIsInJam
+											? "Salir de la Jam"
+											: "Unirse a la Jam"
+										: "Inicia sesión para unirte"}
+								</span>
+							</div>
 						</button>
 					)}
 				</div>

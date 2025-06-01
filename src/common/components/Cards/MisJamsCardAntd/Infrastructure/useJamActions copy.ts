@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { deleteJam, expelPlayer, leaveJam, updateJam } from "./handleActions";
-import { Jam, JamUpdateDTO } from "@/common/types/utility";
+import { Jam } from "@/common/types/utility";
 
 export const useJamActions = ({
 	jam,
@@ -85,18 +85,16 @@ export const useJamActions = ({
 		}
 	};
 
-	const handleUpdateJam = async (updatedJamData: JamUpdateDTO) => {
+	const handleUpdateJam = async (updatedJamData: Partial<Jam>) => {
 		setLoadingUpdate(true);
 		try {
-			const response = await updateJam(jam.id, updatedJamData);
+			await updateJam(jam.id, updatedJamData);
 			showSuccessToast("Jam actualizada correctamente");
 			await onActionComplete?.();
 			return true;
 		} catch (e) {
-			console.error("Error al actualizar:", e);
-			showErrorToast(
-				e.message || "No se pudo actualizar la jam. Inténtalo más tarde."
-			);
+			console.error(e);
+			showErrorToast("No se pudo actualizar la jam. Inténtalo más tarde.");
 			return false;
 		} finally {
 			setLoadingUpdate(false);

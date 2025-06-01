@@ -42,6 +42,28 @@
 	}
 }
 
+.custom-modal .ant-modal-content {
+	background-color: #181e2c;
+}
+
+.custom-modal .ant-modal-close-x {
+	color: #e0e0e0;
+}
+
+.custom-modal .ant-modal-title {
+	color: #ffffff;
+}
+
+.custom-modal .ant-modal-header {
+	background-color: #181e2c;
+	border-bottom: 1px solid #e4e4e4;
+}
+
+/*
+.custom-modal .ant-form-item-label > label {
+	color: #333 !important;
+}*/
+
 h1 {
 	padding: 30px;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);

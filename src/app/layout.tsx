@@ -3,7 +3,7 @@ import "./globals.css";
 import Footer from "@/common/components/Footer/Footer";
 import { ConfigProvider } from "antd";
 import themeConfig from "../../themeConfig";
-import { roboto, pressStart2p } from "./fonts/fonts";
+import { roboto } from "./fonts/fonts";
 
 export const metadata = {
 	title: "Matchmaker",
