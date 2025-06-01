@@ -24,6 +24,24 @@
 	--font-press-start: "Press Start 2P", monospace;
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+	@keyframes fade-in {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 0.2;
+		}
+	}
+	.animate-fade-in {
+		animation: fade-in 0.6s ease-in-out;
+	}
+}
+
 h1 {
 	padding: 30px;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);

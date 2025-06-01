@@ -17,11 +17,12 @@ import { useAuth } from "@/common/hooks/useAuth";
 import { MisJamCardAntdProps } from "./interface";
 import { useJamActions } from "../Infrastructure/useJamActions";
 import dayjs from "dayjs";
+import Link from "next/link";
 
 const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 	jam,
-	onUpdate,
-	onDelete,
+	onActionComplete,
+	editable,
 }) => {
 	const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 	const [isConfirmDeleteVisible, setIsConfirmDeleteVisible] = useState(false);
@@ -47,8 +48,6 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 	const isOwner = currentUser?.steamId === createdBy.steamId;
 
 	const {
-		contextHolder,
-		messageApi,
 		loadingDelete,
 		loadingExpel,
 		handleDelete,
@@ -56,8 +55,7 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 		handleConfirmLeave,
 	} = useJamActions({
 		jam,
-		onUpdate,
-		onDelete,
+		onActionComplete,
 		currentUserId: currentUser?.steamId,
 	});
 
@@ -90,10 +88,9 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 		"180-240": "⏱️ 3–4 h",
 		"240+": "⏱️ +4 h",
 	};
+
 	return (
 		<>
-			{contextHolder}
-
 			<div className="relative rounded-2xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02] max-w-xl mx-auto my-1">
 				{/* Imagen + Tags + Título */}
 				<div className="relative w-full h-60 overflow-hidden rounded-t-2xl">
@@ -115,29 +112,6 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 						<Tag color="orange">{languageMap[jam.language]}</Tag>
 						<Tag color="green">{durationMap[jam.duration]}</Tag>
 					</div>
-					{/* Nombre del juego superpuesto 
-					<div className="absolute top-3 left-3 bg-gray-900/60 border border-white/20 text-white text-sm font-semibold px-3 py-1 rounded-sm shadow-sm backdrop-blur-sm z-20">
-						{game?.name}
-					</div>
-
-					{/* Tags en la parte inferior con fondo degradado 
-					<div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-2 flex flex-wrap gap-1 z-20">
-						{gameMode && (
-							<Tag color="red" className="font-bold uppercase">
-								{gameMode}
-							</Tag>
-						)}
-						{voiceMode && (
-							<Tag color="blue" className="font-bold uppercase">
-								{voiceMode}
-							</Tag>
-						)}
-						{language && (
-							<Tag color="orange" className="font-bold uppercase">
-								{language}
-							</Tag>
-						)}
-					</div>}*/}
 
 					{/* Contenedor general */}
 					<div className="relative rounded-2xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02] max-w-xl mx-auto my-8 bg-white">
@@ -153,12 +127,15 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 					<div className="flex items-center justify-start gap-4 text-sm text-gray-600 font-medium mb-1">
 						{!isOwner && (
 							<div className="flex items-center gap-3">
-								<Avatar src={createdBy.avatar} />
-								<p className="font-medium text-gray-800">
-									{createdBy.name || "Creador"}
-								</p>
+								<Link href={`/perfil/${createdBy.steamId}`}>
+									<div className="flex items-center gap-2 text-gray-900 hover:underline hover:text-red-600">
+										<Avatar src={createdBy.avatar} />
+										<span>{createdBy.name || "Creador"}</span>
+									</div>
+								</Link>
 							</div>
 						)}
+
 						<div className="flex items-center gap-1 font-bold">
 							<CalendarOutlined className="text-[14px]" />
 							<span>{dayjs(jam.jamDate).format("DD/MM/YYYY")}</span>
@@ -215,10 +192,9 @@ const MisJamCardAntd: FC<MisJamCardAntdProps> = ({
 			<ModalJam
 				isVisible={isEditModalVisible}
 				onCancel={() => setIsEditModalVisible(false)}
-				onUpdate={onUpdate}
+				onUpdate={onActionComplete}
 				players={players?.length || 0}
 				jamData={jam}
-				messageApi={messageApi}
 			/>
 
 			<ConfirmModalAntd

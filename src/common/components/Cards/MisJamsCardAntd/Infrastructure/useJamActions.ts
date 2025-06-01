@@ -1,81 +1,94 @@
-// useJamActions.ts
 import { useState } from "react";
-import { message } from "antd";
+import { toast } from "react-toastify";
 import { deleteJam, expelPlayer, leaveJam } from "./handleActions";
 import { Jam } from "@/common/types/utility";
 
 export const useJamActions = ({
-  jam,
-  onUpdate,
-  onDelete,
-  currentUserId,
+	jam,
+	onActionComplete,
+	currentUserId,
 }: {
-  jam: Jam;
-  onUpdate: (updatedJam: Jam) => void;
-  onDelete?: (id: string) => void;
-  currentUserId?: string;
+	jam: Jam;
+	onActionComplete?: () => Promise<void>;
+	currentUserId?: string;
 }) => {
-  const [messageApi, contextHolder] = message.useMessage();
-  const [loadingDelete, setLoadingDelete] = useState(false);
-  const [loadingExpel, setLoadingExpel] = useState(false);
+	const [loadingDelete, setLoadingDelete] = useState(false);
+	const [loadingExpel, setLoadingExpel] = useState(false);
 
-  const handleDelete = async () => {
-    if (!onDelete) return;
-    setLoadingDelete(true);
-    try {
-      await deleteJam(jam.id);
-      messageApi.success("Jam eliminada correctamente");
-      await new Promise((r) => setTimeout(r, 500));
-      onDelete(jam.id);
-    } catch (e) {
-      console.error(e);
-      messageApi.error("No se pudo eliminar la jam. Inténtalo más tarde.");
-    } finally {
-      setLoadingDelete(false);
-    }
-  };
+	const showSuccessToast = (message: string) => {
+		toast.success(message, {
+			position: "top-right",
+			autoClose: 3000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+			progress: undefined,
+			theme: "colored",
+		});
+	};
 
-  const handleConfirmExpel = async (playerId: string) => {
-    setLoadingExpel(true);
-    try {
-      const updatedJam = await expelPlayer(jam.id, playerId);
-      messageApi.success("Jugador expulsado correctamente");
-      onUpdate(updatedJam);
-    } catch (e) {
-      console.error(e);
-      messageApi.error("No se pudo expulsar al jugador. Inténtalo más tarde.");
-    } finally {
-      setLoadingExpel(false);
-    }
-  };
+	const showErrorToast = (message: string) => {
+		toast.error(message, {
+			position: "top-right",
+			autoClose: 3000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+			progress: undefined,
+			theme: "colored",
+		});
+	};
 
-  const handleConfirmLeave = async () => {
-    if (!currentUserId) return;
-    setLoadingDelete(true);
-    try {
-      const result = await leaveJam(jam.id, currentUserId);
-      messageApi.success("Has salido de la jam.");
+	const handleDelete = async () => {
+		setLoadingDelete(true);
+		try {
+			await deleteJam(jam.id);
+			showSuccessToast("Jam eliminada correctamente");
+			await onActionComplete?.();
+		} catch (e) {
+			console.error(e);
+			showErrorToast("No se pudo eliminar la jam. Inténtalo más tarde.");
+		} finally {
+			setLoadingDelete(false);
+		}
+	};
 
-      if (result?.players?.length > 0) {
-        onUpdate(result);
-      } else if (onDelete) {
-        onDelete(jam.id);
-      }
-    } catch (e) {
-      console.error(e);
-      messageApi.error("No se pudo salir de la jam. Inténtalo más tarde.");
-    } finally {
-      setLoadingDelete(false);
-    }
-  };
+	const handleConfirmExpel = async (playerId: string) => {
+		setLoadingExpel(true);
+		try {
+			await expelPlayer(jam.id, playerId);
+			showSuccessToast("Jugador expulsado correctamente");
+			await onActionComplete?.();
+		} catch (e) {
+			console.error(e);
+			showErrorToast("No se pudo expulsar al jugador. Inténtalo más tarde.");
+		} finally {
+			setLoadingExpel(false);
+		}
+	};
 
-  return {
-    messageApi,
-    contextHolder,
-    loadingDelete,
-    loadingExpel,
-    handleDelete,
-    handleConfirmExpel,
-    handleConfirmLeave,
-  };
+	const handleConfirmLeave = async () => {
+		if (!currentUserId) return;
+		setLoadingDelete(true);
+		try {
+			await leaveJam(jam.id, currentUserId);
+			showSuccessToast("Has salido de la jam");
+			await onActionComplete?.();
+		} catch (e) {
+			console.error(e);
+			showErrorToast("No se pudo salir de la jam. Inténtalo más tarde.");
+		} finally {
+			setLoadingDelete(false);
+		}
+	};
+
+	return {
+		loadingDelete,
+		loadingExpel,
+		handleDelete,
+		handleConfirmExpel,
+		handleConfirmLeave,
+	};
 };

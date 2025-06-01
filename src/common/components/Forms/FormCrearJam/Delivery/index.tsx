@@ -198,6 +198,7 @@ const FormCrearJam = () => {
 						<DatePicker
 							style={{ width: "100%" }}
 							className="text-left"
+							showToday={false}
 							disabledDate={(d) =>
 								!d || d.isAfter(dayjs().add(1, "year")) || d.isBefore(dayjs())
 							}
@@ -212,6 +213,8 @@ const FormCrearJam = () => {
 					>
 						<TimePicker
 							format="HH:mm"
+							allowClear={false}
+							showNow={false}
 							style={{ width: "100%" }}
 							className="text-left"
 						/>
