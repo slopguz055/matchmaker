@@ -1,28 +1,24 @@
-import { useRouter, useSearchParams } from "next/navigation";
+"use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { User } from "../types/utility";
 import { useAuth } from "./useAuth";
+import { API_URL } from "@/common/utils/config";
 
-export function useUserProfile() {
+export function useUserProfile(steamIdFromUrl?: string) {
   const { user: authUser, loading: authLoading, error: authError } = useAuth();
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const steamIdFromUrl = searchParams.get("id");
 
   const [usuario, setUsuario] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
 
-  // Función para obtener usuario desde API
   async function fetchUser(steamId: string) {
     setCargando(true);
     setError(null);
 
     try {
-      const res = await fetch(
-        `http://localhost:8080/users/byId/mongo/${steamId}`
-      );
+      const res = await fetch(`${API_URL}/users/byId/mongo/${steamId}`);
 
       if (res.status === 404) {
         throw new Error(
@@ -74,8 +70,7 @@ export function useUserProfile() {
     }
 
     // Si no hay steamId ni usuario autenticado
-    setError("No se proporcionó una Steam ID");
-    setCargando(false);
+    router.replace(`/`);
   }, [authLoading, authError, authUser, steamIdFromUrl, router]);
 
   return { usuario, error, cargando };

@@ -9,26 +9,26 @@ import CustomArrow from "../components/CustomArrow/Delivery";
 import SmallCardTailwind from "../../Cards/SmallCardTailwind/Delivery";
 
 const CustomCarousel: FC<CustomCarouselProps> = ({ items }) => {
-	const settings = {
-		arrows: true,
-		centerMode: true,
-		centerPadding: "20px",
-		dots: true,
-		infinite: true,
-		speed: 500,
-		slidesToShow: 3,
-		slidesToScroll: 1,
-		nextArrow: <CustomArrow direction="right" />,
-		prevArrow: <CustomArrow direction="left" />,
-		responsive: [
-			{ breakpoint: 1024, settings: { slidesToShow: 2 } },
-			{ breakpoint: 768, settings: { slidesToShow: 1, centerMode: false } },
-		],
-	};
+  const settings = {
+    arrows: true,
+    centerMode: true,
+    centerPadding: "20px",
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    nextArrow: <CustomArrow direction="right" />,
+    prevArrow: <CustomArrow direction="left" />,
+    responsive: [
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
+      { breakpoint: 768, settings: { slidesToShow: 1, centerMode: false } },
+    ],
+  };
 
-	return (
-		<div className="relative px-2 sm:px-4 md:px-6 py-6 h-[34vh] md:mb-10">
-			<style>{`
+  return (
+    <div className="relative px-2 sm:px-4 md:px-6 py-6 h-[34vh] md:mb-10">
+      <style>{`
         .slick-prev::before, .slick-next::before {
           display: none;
         }
@@ -51,15 +51,15 @@ const CustomCarousel: FC<CustomCarouselProps> = ({ items }) => {
         }
       `}</style>
 
-			<Slider {...settings}>
-				{items.map((item, index) => (
-					<div key={index} className="px-2">
-						<SmallCardTailwind {...item} />
-					</div>
-				))}
-			</Slider>
-		</div>
-	);
+      <Slider {...settings}>
+        {items.map((item, index) => (
+          <div key={index} className="px-2">
+            <SmallCardTailwind {...item} />
+          </div>
+        ))}
+      </Slider>
+    </div>
+  );
 };
 
 export default CustomCarousel;

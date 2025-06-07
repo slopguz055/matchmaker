@@ -1,4 +1,3 @@
-// JamCardHeader.tsx
 "use client";
 
 import React, { FC } from "react";
@@ -22,9 +21,6 @@ const JamCardHeader: FC<JamCardHeaderProps> = ({
   jamTitle,
   gameTitle,
 }) => {
-  console.log("JamTitle: " + jamTitle);
-  console.log("JamTime: " + jamTime);
-  console.log("JamDate: " + jamDate);
   return (
     <div className="space-y-2">
       {/* Título del juego */}
